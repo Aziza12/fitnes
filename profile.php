@@ -36,6 +36,26 @@
                     </svg></a>
 
             </div>
+            <?php
+// Assuming $connection is properly established
+
+$sql = "SELECT * FROM data_registration";
+$stmt = $connection->query($sql);
+
+$params = [];
+
+while ($rowJoin = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    
+    echo "Gender:" . $rowJoin['id_user']. "<br>"; // Debugging statement to check the fetched gender value
+    $params[]['id_user'] = $rowJoin['id_user']; 
+}
+
+// Use print_r to display the contents of the array
+print_r($params);
+?>
+
+
+
             <div class="info-users">
 
                 <div class="height">

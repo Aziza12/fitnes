@@ -12,15 +12,41 @@ require './PHPMailer/src/PHPMailer.php';
 require './PHPMailer/src/SMTP.php';
 
 
+// Подключение к базе данных
+include './app/database/connectDB.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" &&  isset($_POST['select-type'])) {
+    $name = $_POST['name'];
+    $surname = $_POST['surname'];
+
+    // Ваш SQL-запрос для обновления данных пользователя
+    $sql = "UPDATE data_registration SET name = :name, surname = :surname WHERE id = :id";
+
+    $stmt = $connection->prepare($sql);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':surname', $surname);
+    $stmt->bindParam(':id', $_GET['id']); // Получаем id пользователя из URL
+    $stmt->execute();
+
+    // Перенаправление на страницу со списком пользователей после обновления
+    header("Location: admin-user-edit.php");
+    exit();
+}
 
 $isSubmit = false;
 $errMsgEmpty = "";
 $errEmail = '';
 
 // Получаем идентификатор пользователя из сессии
-$id_user = $_SESSION['id_user'];
+$sql = "SELECT * FROM data_registration";
+$stmt = $connection->query($sql);
+$User = '';
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (trim($_SESSION['name']) === trim($row['name']))
+        $User = $row['id_user'];
+}
+$user = selectOne('data_registration', ['id_user' => $User]);
 
-$user = selectOne('data_registration', ['id_user']);
 
 // Вызываем функцию selectOne для получения данных из таблицы
 // 'users_information_for_calculator' для заданных условий
@@ -166,8 +192,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update-informations']
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nutrition'])) {
-
-    if (isset($data['id_user'])) {
+    $sql = "SELECT * FROM users_information_for_calculator";
+    $stmt = $connection->query($sql);
+    $User = '';
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $User = $row['id_user'];
+    }
+    prints($User);
+    // exit();
+    if ($user['id_user']===$User) {
         $params = [
             'goal'          => $_POST['goal-options'],
             'gender'        => $_POST['gender-options'],
@@ -177,7 +210,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nutrition'])) {
             'bodyfat'       => $_POST['bodyfat-options'], // Не уверен, нужна ли здесь функция trim
             'activityLevel' => $_POST['activateLevel']    // Не уверен, нужна ли здесь функция trim
         ];
-        $id = $data['id_user']; // Поправил на $id
+        prints($params);
+        exit();
+        $id = $user['id_user']; // Поправил на $id
 
         // Используем параметризированный запрос
         $sql = "UPDATE users_information_for_calculator SET goal = :goal, gender = :gender, height = :height, weight = :weight, age = :age, bodyfat = :bodyfat, activityLevel = :activityLevel WHERE id_user = :id";
@@ -194,7 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nutrition'])) {
         // Выполняем запрос
         $query->execute();
         dbCheckError($query);
-
+        // echo $data['id_user'];
+        // exit();
         // Добавляем код для редиректа пользователя
         header('Location: ' . BASE_URL . 'profile.php');
     } else {
@@ -380,10 +416,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['button-log'])) {
                 $_SESSION['name'] = $user['name'];
                 $_SESSION['surname'] = $user['surname'];
                 $_SESSION['email'] = $user['email'];
-                // prints($_SESSION['name']);
 
-                header('location:' . BASE_URL . 'profile.php');
+                if (trim($user['email']) ===  $email && password_verify($pass, $storedHash) === true && $email === trim('admin@gmail.com')) {
+
+                    header('location:' . BASE_URL . 'admin_profile.php');
+                } else {
+
+
+                    header('location:' . BASE_URL . 'profile.php');
+                }
             } else {
+
                 $errMsgEmpty = 'логин или пароль не правельный';
             }
         }
@@ -418,9 +461,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $selectedEmojis = $_POST['selected-emojis'];
         $selectedReasons = $_POST['selected-reasons'];
         $data_feedback = [
-            'estimation' => implode( " , ", $selectedEmojis ) , // Объединяем выбранные эмодзи в строку
-            'support' => implode(", ", $selectedReasons), 
-           
+            'estimation' => implode(" , ", $selectedEmojis), // Объединяем выбранные эмодзи в строку
+            'support' => implode(", ", $selectedReasons),
+
         ];
         $feed = insert('support_service', $data_feedback);
         if ($feed) {

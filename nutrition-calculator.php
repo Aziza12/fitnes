@@ -125,25 +125,7 @@
                 </div>
             </div>
 
-            <!-- <div class="info">
-                    <div id="goal-selected">
-                        <label for="goalWeight">Enter your goal weight</label>
-                        <div class="input-with-suffix">
-                            <input type="number" id="goalWeight" min="0" step="0.1">
-                            <span>kg</span>
-                        </div>
-                    </div>
-                    <div id="lose">
-                        <label for="rate">Weight change rate</label>
-                        <p>Lose <input type="number" id="age" min="0" step="1"> kgs per week</p>
-                        <p style="font-size:13px; font-weight: light;"> You will reach your goal in <span id="date"></P>
-                    </div>
-                    <div id="gain">
-                        <label for="rate">Weight change rate</label>
-                        <p>Gain <input type="number" id="age" min="0" step="1"> kgs per week</p>
-                        <p style="font-size:13px; font-weight: light;"> You will reach your goal in <span id="date"></P>
-                    </div> -->
-
+    
     
 
 
